@@ -3,42 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>OneDrive Article</title>
+    <title>Article Deployer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<header>
     <nav>
-        <ul>
-            <li><a href="{{ url_for('index') }}">Home</a></li>
-            <li><a href="{{ url_for('about') }}">About</a></li>
-            <li><a href="{{ url_for('services') }}">Services</a></li>
-            <li><a href="{{ url_for('contact') }}">Contact</a></li>
-            {% if session.get('username') %}
-                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                {% if session.get('role') == 'admin' %}
-                    <li><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
-                {% endif %}
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        <div class="nav-left">
+            <a href="{{ url_for('index') }}">{{ logo_text }}</a>
+        </div>
+        <div class="nav-right">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('about') }}">About</a>
+            <a href="{{ url_for('services') }}">Services</a>
+            <a href="{{ url_for('contact') }}">Contact</a>
+            {% if 'user_id' in session %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
-                <li><a href="{{ url_for('login') }}">Login</a></li>
-                <li><a href="{{ url_for('register') }}">Register</a></li>
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
             {% endif %}
-        </ul>
+        </div>
     </nav>
-</header>
-<div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message|safe }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-</div>
-<footer>
-    <p>&copy; 2024 Article Deployer. All rights reserved.</p>
-</footer>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
 </body>
 </html>
