@@ -8,14 +8,13 @@ import os
 import bcrypt
 import random
 import string
-import sqlite3
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 
@@ -59,36 +58,21 @@ class EditForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
     submit = SubmitField('Update')
 
-def init_db():
-    db.create_all()
-    conn = sqlite3.connect('database.sqlite')
-    cursor = conn.cursor()
-    cursor.execute('PRAGMA table_info(article)')
-    columns = [column[1] for column in cursor.fetchall()]
-    if 'slug' not in columns:
-        cursor.execute('ALTER TABLE article ADD COLUMN slug TEXT UNIQUE')
-    if 'name' not in columns:
-        cursor.execute('ALTER TABLE article ADD COLUMN name TEXT')
-    if 'company' not in columns:
-        cursor.execute('ALTER TABLE article ADD COLUMN company TEXT')
-    conn.commit()
-    conn.close()
-
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', logo_text="My Logo")
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', logo_text="My Logo")
 
 @app.route('/services')
 def services():
-    return render_template('services.html')
+    return render_template('services.html', logo_text="My Logo")
 
 @app.route('/contact')
 def contact():
-    return render_template('contact.html')
+    return render_template('contact.html', logo_text="My Logo")
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -102,14 +86,14 @@ def admin_login():
             return redirect(url_for('admin_dashboard'))
         else:
             flash('Invalid credentials', 'danger')
-    return render_template('admin/login.html', form=form)
+    return render_template('admin/login.html', form=form, logo_text="My Logo")
 
 @app.route('/admin')
 def admin_dashboard():
     if session.get('role') != 'admin':
         return redirect(url_for('admin_login'))
     articles = Article.query.all()
-    return render_template('admin/index.html', articles=articles)
+    return render_template('admin/index.html', articles=articles, logo_text="My Logo")
 
 @app.route('/user/register', methods=['GET', 'POST'])
 def register():
@@ -120,7 +104,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
-    return render_template('user/register.html', form=form)
+    return render_template('user/register.html', form=form, logo_text="My Logo")
 
 @app.route('/user/login', methods=['GET', 'POST'])
 def login():
@@ -134,7 +118,7 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid credentials', 'danger')
-    return render_template('user/login.html', form=form)
+    return render_template('user/login.html', form=form, logo_text="My Logo")
 
 @app.route('/user/logout')
 def logout():
@@ -149,7 +133,7 @@ def dashboard():
         return redirect(url_for('login'))
     user_id = session['user_id']
     articles = Article.query.filter_by(user_id=user_id).all()
-    return render_template('user/dashboard.html', articles=articles)
+    return render_template('user/dashboard.html', articles=articles, logo_text="My Logo")
 
 def generate_slug(title):
     random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
@@ -174,7 +158,7 @@ def deploy():
         db.session.commit()
         flash(f'Article deployed successfully! View it <a href="{url_for("view_article", slug=new_article.slug)}">here</a>.', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('user/deploy.html', form=form)
+    return render_template('user/deploy.html', form=form, logo_text="My Logo")
 
 @app.route('/user/edit/<int:article_id>', methods=['GET', 'POST'])
 def edit(article_id):
@@ -190,7 +174,7 @@ def edit(article_id):
         db.session.commit()
         flash('Article updated successfully!', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('user/edit.html', form=form, article_id=article_id)
+    return render_template('user/edit.html', form=form, article_id=article_id, logo_text="My Logo")
 
 @app.route('/user/delete/<int:article_id>', methods=['POST'])
 def delete(article_id):
@@ -206,7 +190,7 @@ def delete(article_id):
 @app.route('/article/<slug>')
 def view_article(slug):
     article = Article.query.filter_by(slug=slug).first_or_404()
-    return render_template('article.html', article=article)
+    return render_template('article.html', article=article, logo_text=article.company)
 
 if __name__ == '__main__':
     with app.app_context():
