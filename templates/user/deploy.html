@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Deploy New Article</h2>
+<form action="{{ url_for('deploy') }}" method="post">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.title.label }}<br>
+        {{ form.title(size=32) }}
+    </div>
+    <div>
+        {{ form.name.label }}<br>
+        {{ form.name(size=32) }}
+    </div>
+    <div>
+        {{ form.company.label }}<br>
+        {{ form.company(size=32) }}
+    </div>
+    <div>
+        {{ form.content.label }}<br>
+        <textarea id="content-editor" name="content">{{ form.content.data }}</textarea>
+    </div>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+<script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('content-editor');
+</script>
+{% endblock %}

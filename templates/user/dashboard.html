@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>User Dashboard</h2>
+<a href="{{ url_for('deploy') }}">Deploy New Article</a>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for article in articles %}
+            <tr>
+                <td>{{ article.id }}</td>
+                <td>{{ article.title }}</td>
+                <td>
+                    {% if article.slug %}
+                        <a href="{{ url_for('view_article', slug=article.slug) }}">View</a>
+                    {% else %}
+                        <span>No slug</span>
+                    {% endif %}
+                    <a href="{{ url_for('edit', article_id=article.id) }}">Edit</a>
+                    <form action="{{ url_for('delete', article_id=article.id) }}" method="post" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

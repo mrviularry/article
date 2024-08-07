@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="article-view">
+    <div class="article-header">
+        <h1>{{ article.title }}</h1>
+        <div class="article-meta">
+            <h2>{{ article.company }}</h2>
+            <p>Viewing by: {{ article.name }}</p>
+        </div>
+    </div>
+    <div class="article-content">
+        {{ article.content|safe }}
+    </div>
+</div>
+{% endblock %}
