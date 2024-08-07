@@ -1,37 +1,57 @@
-import sqlite3
-import bcrypt
+import mysql.connector
+from mysql.connector import errorcode
+import os
+from dotenv import load_dotenv
 
-conn = sqlite3.connect('database.sqlite')
-cursor = conn.cursor()
+# Load environment variables
+load_dotenv()
 
-# Create tables
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT,
-    role TEXT
-)
-''')
+# Database connection configuration
+config = {
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST'),
+    'database': os.getenv('DB_NAME'),
+    'raise_on_warnings': True
+}
 
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS articles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    title TEXT,
-    content TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-)
-''')
+try:
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
 
-# Create admin user if not exists
-cursor.execute('SELECT COUNT(*) FROM users WHERE username = "admin"')
-if cursor.fetchone()[0] == 0:
-    hashed = bcrypt.hashpw('john18'.encode('utf-8'), bcrypt.gensalt())
+    # Create User table
     cursor.execute('''
-    INSERT INTO users (username, password, role)
-    VALUES (?, ?, ?)
-    ''', ('admin', hashed, 'admin'))
+    CREATE TABLE IF NOT EXISTS user (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(80) NOT NULL UNIQUE,
+        password VARCHAR(120) NOT NULL,
+        role VARCHAR(10) NOT NULL
+    )
+    ''')
 
-conn.commit()
-conn.close()
+    # Create Article table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS article (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        title VARCHAR(200) NOT NULL,
+        content TEXT NOT NULL,
+        slug VARCHAR(220) UNIQUE NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        company VARCHAR(100) NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES user(id)
+    )
+    ''')
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("Database initialized successfully")
+
+except mysql.connector.Error as err:
+    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        print("Something is wrong with your user name or password")
+    elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        print("Database does not exist")
+    else:
+        print(err)
